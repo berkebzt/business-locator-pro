@@ -195,5 +195,3 @@ If you encounter any issues or have questions:
 - [ ] Progressive Web App (PWA) features
 
 ---
-
-**Made with ❤️ using modern web technologies**
