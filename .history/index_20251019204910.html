@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Locator Pro</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div class="logo-section">
+          <div class="logo">
+            <i class="fas fa-map-marker-alt"></i>
+            <h1>Business Locator Pro</h1>
+          </div>
+          <p class="tagline">Discover local businesses around you</p>
+        </div>
+        
+        <div class="header-stats">
+          <div class="stat-item">
+            <i class="fas fa-building"></i>
+            <span id="businessCount">0</span>
+            <small>Businesses</small>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-map-pin"></i>
+            <span id="currentCity">Detecting...</span>
+          </div>
+        </div>
+        
+        <div class="header-controls">
+          <button id="favoritesBtn" class="control-btn favorites-btn" title="View Favorites">
+            <i class="fas fa-heart"></i>
+            <span id="favoritesCount" class="favorites-count">0</span>
+          </button>
+          <button id="darkModeToggle" class="control-btn" title="Toggle Dark Mode">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button id="shareBtn" class="control-btn" title="Share Location">
+            <i class="fas fa-share-alt"></i>
+          </button>
+          <button id="exportBtn" class="control-btn" title="Export Results">
+            <i class="fas fa-download"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h3><i class="fas fa-list"></i> Nearby Businesses</h3>
+          <button id="sidebarToggle" class="sidebar-toggle">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+        
+        <div class="sidebar-content">
+          <div class="search-section">
+            <div class="search-container">
+              <i class="fas fa-search search-icon"></i>
+              <input type="text" id="searchBox" placeholder="Search businesses...">
+              <button id="clearSearch" class="clear-btn" title="Clear Search">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="filter-buttons">
+              <button class="filter-btn active" data-type="all">
+                <i class="fas fa-th"></i> All
+              </button>
+              <button class="filter-btn" data-type="café">
+                <i class="fas fa-coffee"></i> Cafés
+              </button>
+              <button class="filter-btn" data-type="restaurant">
+                <i class="fas fa-utensils"></i> Restaurants
+              </button>
+              <button class="filter-btn" data-type="shop">
+                <i class="fas fa-shopping-bag"></i> Shops
+              </button>
+            </div>
+            
+            <div class="filter-info">
+              <span id="filterStatus">Showing all businesses</span>
+            </div>
+          </div>
+          
+          <div class="business-list" id="businessList">
+            <!-- Business items will be populated here -->
+          </div>
+        </div>
+      </aside>
+
+      <!-- Map Container -->
+      <main class="map-container">
+        <div class="status-bar">
+          <div id="loadingIndicator" class="loading hidden">
+            <div class="spinner"></div>
+            <span id="loadingText">Loading...</span>
+          </div>
+          <div id="statusMessage" class="status-message"></div>
+        </div>
+        
+        <div id="map"></div>
+        
+        <div class="map-controls">
+          <button id="locateBtn" class="locate-btn">
+            <i class="fas fa-crosshairs"></i>
+            <span>Find Me</span>
+          </button>
+        </div>
+        
+        <!-- Route Controls -->
+        <div class="route-controls" id="routeControls" style="display: none;">
+          <div class="route-header">
+            <h4><i class="fas fa-route"></i> Route Information</h4>
+            <button id="clearRoute" class="clear-route-btn" title="Clear Route">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          
+          <div class="route-info">
+            <div class="route-mode">
+              <label for="travelMode">Travel Mode:</label>
+              <select id="travelMode">
+                <option value="driving">🚗 Driving</option>
+                <option value="cycling">🚴 Cycling</option>
+                <option value="foot-walking">🚶 Walking</option>
+              </select>
+            </div>
+            
+            <div class="route-stats">
+              <div class="route-stat">
+                <i class="fas fa-road"></i>
+                <span id="routeDistance">-</span>
+                <small>Distance</small>
+              </div>
+              <div class="route-stat">
+                <i class="fas fa-clock"></i>
+                <span id="routeDuration">-</span>
+                <small>Duration</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Favorites Modal -->
+    <div id="favoritesModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2><i class="fas fa-heart"></i> My Favorites</h2>
+          <button id="closeFavoritesModal" class="close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="favorites-actions">
+            <button id="exportFavorites" class="action-btn export-btn">
+              <i class="fas fa-download"></i> Export JSON
+            </button>
+            <button id="clearAllFavorites" class="action-btn clear-btn">
+              <i class="fas fa-trash"></i> Clear All
+            </button>
+          </div>
+          
+          <div id="favoritesList" class="favorites-list">
+            <!-- Favorites will be populated here -->
+          </div>
+          
+          <div id="emptyFavorites" class="empty-favorites">
+            <i class="fas fa-heart-broken"></i>
+            <h3>No favorites yet!</h3>
+            <p>Start adding businesses to your favorites by clicking the heart icon in their popups.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>Data Sources</h4>
+          <p>Powered by <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a>, 
+             <a href="https://nominatim.org/" target="_blank">Nominatim</a>, 
+             <a href="https://overpass-api.de/" target="_blank">Overpass API</a>, 
+             <a href="https://openrouteservice.org/" target="_blank">OpenRouteService</a>, 
+             and <a href="https://ipapi.co/" target="_blank">ipapi.co</a></p>
+        </div>
+        <div class="footer-section">
+          <h4>Business Locator Pro</h4>
+          <p>Version 2.0 | Built with Leaflet.js</p>
+        </div>
+        <div class="footer-section">
+          <h4>Features</h4>
+          <p>Real-time business discovery • Distance calculation • Smart filtering • Route planning</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
