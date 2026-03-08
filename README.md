@@ -195,3 +195,5 @@ If you encounter any issues or have questions:
 - [ ] Progressive Web App (PWA) features
 
 ---
+## Acknowledgements
+Thanks to the open-source community for the libraries used in this project.
